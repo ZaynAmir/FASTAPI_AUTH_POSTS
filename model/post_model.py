@@ -11,3 +11,13 @@ class Post(BaseModel):
     user_id = Column(String(36), ForeignKey("users.id"))
     # Define the many-to-one relationship with User
     author = relationship("User", back_populates="posts")
+
+    def to_json(self):
+        return {
+            "id" : self.id,
+            "title" : self.title,
+            "content" : self.content, 
+            "user_id" : self.user_id,
+            "createdAt": self.createdAt,
+            "updatedAt": self.updatedAt
+        }

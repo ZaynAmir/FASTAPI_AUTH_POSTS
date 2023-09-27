@@ -1,7 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from database import get_db
 from model import Post 
+from cachetools import TTLCache
+
+# Create an in-memory cache with a max size of 100 and a TTL (time-to-live) of 5 minutes (300 seconds)
+cache = TTLCache(maxsize=100, ttl=300)
 
 
 def add_new_post(request, post_request, get_logged_user, db, MAX_PAYLOAD_SIZE_BYTES):
@@ -21,7 +26,14 @@ def add_new_post(request, post_request, get_logged_user, db, MAX_PAYLOAD_SIZE_BY
 def get_all_posts_of_user(get_logged_user, db):
     current_user = get_logged_user
     user_id = current_user["user_id"]
+    # Check if the response is cached
+    cached_response = cache.get(user_id)
+    if cached_response:
+        print("retrieving cached response!!")
+        return cached_response
     posts = db.query(Post).filter(Post.user_id==user_id).all()
+    #storing the json response here, user_id will be the key and list of post is the value
+    cache[user_id] = [post.to_json() for post in posts]
     return posts
 
 def get_post(post_id, db):
