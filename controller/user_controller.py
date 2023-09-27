@@ -1,12 +1,8 @@
 from fastapi import APIRouter, Depends
 from fastapi import FastAPI, HTTPException
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session
 from database import get_db
 from model.user_model import User
-from schemas.user_schema import UserCreateRequest, Token
 
 from datetime import timedelta, datetime
 from typing import Annotated
@@ -79,3 +75,14 @@ def create_access_token(username: str, user_id: uuid.uuid4(), expire_time: timed
     }
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, ALGORITHM)
     return encoded_jwt
+
+async def get_current_user(token: Annotated[str, Depends(oauth2_bearer)]):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username : str = payload.get('sub')
+        user_id : str = payload.get('user_id')
+        if username is None or user_id is None:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate user.")
+        return { "username": username, "user_id": user_id}
+    except JWTError:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate user.")
