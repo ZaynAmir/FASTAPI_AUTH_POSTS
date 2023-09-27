@@ -1,9 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException, Request
-from fastapi.responses import JSONResponse
-from sqlalchemy.orm import Session
-from database import get_db
+from fastapi import HTTPException
 from model import Post 
 from cachetools import TTLCache
+import uuid
 
 # Create an in-memory cache with a max size of 100 and a TTL (time-to-live) of 5 minutes (300 seconds)
 cache = TTLCache(maxsize=100, ttl=300)
@@ -17,7 +15,8 @@ def add_new_post(request, post_request, get_logged_user, db, MAX_PAYLOAD_SIZE_BY
             detail="Payload size exceeds the maximum allowed size.",
         )
     current_user = get_logged_user
-    new_post = Post(title=post_request.title, content=post_request.content, user_id=current_user["user_id"])
+    new_post_id = uuid.uuid4()
+    new_post = Post(id=new_post_id, title=post_request.title, content=post_request.content, user_id=current_user["user_id"])
     db.add(new_post)
     db.commit()
     db.refresh(new_post)

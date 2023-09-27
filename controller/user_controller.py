@@ -25,7 +25,8 @@ def register_new_user(user_request, db: Session):
     if existing_user:
         raise HTTPException(status_code=400, detail="Username already exists")
     try:
-        new_user = User(username=user_request.username,
+        new_user_id = uuid.uuid4()
+        new_user = User(id=new_user_id,username=user_request.username,
                     hashed_password=bycrypt_context.hash(user_request.password)) #hashed the user password before saving into DB
         db.add(new_user)
         db.commit()
@@ -39,19 +40,15 @@ def register_new_user(user_request, db: Session):
         raise HTTPException(status_code=500, detail={"error": "Internal Server Error"})
     
 def login_user(username: str, password: str, db: Session):
-    try:
-        user = authenticate_user(username, password, db)
-        if not user:
-            raise HTTPException(status_code=400, detail="Could not validate user")
-        token = create_access_token(user.username, user.id, timedelta(minutes=60))
-        return {
-            "username" : user.username,
-            "user_id": user.id,
-            "access_token": token
-        }
-    except Exception as e:
-        print(e)
-        raise HTTPException(status_code=500, detail={"error": "Internal Server Error"})
+    user = authenticate_user(username, password, db)
+    if not user:
+        raise HTTPException(status_code=400, detail="Could not validate user")
+    token = create_access_token(user.username, user.id, timedelta(minutes=60))
+    return {
+        "username" : user.username,
+        "user_id": user.id,
+        "access_token": token
+    }
 
 def authenticate_user(username:str, password:str, db):
     user = db.query(User).filter(User.username == username).first()
