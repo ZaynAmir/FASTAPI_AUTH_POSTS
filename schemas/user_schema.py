@@ -18,7 +18,14 @@ class UserCreateRequest(BaseModel):
             raise HTTPException(status_code=400, detail="password must be greater or equal to 8 digits")
         return value
 
+class SignupResponse(BaseModel):
+    message: str
+    user_id: str
 
+class LoginResponse(BaseModel):
+    username: str
+    user_id: str
+    access_token: str
 
 class Token(BaseModel):
     access_token: str

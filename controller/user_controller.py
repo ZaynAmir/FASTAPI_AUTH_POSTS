@@ -19,7 +19,7 @@ SECRET_KEY = "12fc35468045690$78900-323235#ec46754b4354a5196696969e69"
 ALGORITHM = 'HS256'
 
 bycrypt_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
-oauth2_bearer = OAuth2PasswordBearer(tokenUrl='auth/token')
+oauth2_bearer = OAuth2PasswordBearer(tokenUrl='auth/login')
 
 def register_new_user(user_request, db: Session):
     # Check if the username already exists in the database
@@ -34,22 +34,26 @@ def register_new_user(user_request, db: Session):
         db.refresh(new_user)
         return {
             "message": "user registered successfully",
-            "id": new_user.id
+            "user_id": new_user.id
         }
     except Exception as e:
         print(e)
         raise HTTPException(status_code=500, detail={"error": "Internal Server Error"})
     
 def login_user(username: str, password: str, db: Session):
-    user = authenticate_user(username, password, db)
-    if not user:
-        raise HTTPException(status_code=400, detail="Could not validate user")
-    token = create_access_token(user.username, user.id, timedelta(minutes=60))
-    return {
-        "username" : user.username,
-        "user_id": user.id,
-        "access_token": token
-    }
+    try:
+        user = authenticate_user(username, password, db)
+        if not user:
+            raise HTTPException(status_code=400, detail="Could not validate user")
+        token = create_access_token(user.username, user.id, timedelta(minutes=60))
+        return {
+            "username" : user.username,
+            "user_id": user.id,
+            "access_token": token
+        }
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=500, detail={"error": "Internal Server Error"})
 
 def authenticate_user(username:str, password:str, db):
     user = db.query(User).filter(User.username == username).first()

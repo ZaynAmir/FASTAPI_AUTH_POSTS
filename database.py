@@ -6,7 +6,7 @@ from sqlalchemy.orm import sessionmaker
 
 
 
-DATABASE_URL = "mysql+pymysql://root:zain1234@127.0.0.1/fastapi_db"
+DATABASE_URL = "mysql+pymysql://root:zain1234@127.0.0.1/post_1"
 
 
 Base = declarative_base()
