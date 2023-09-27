@@ -1,22 +1,20 @@
-from fastapi import APIRouter, Depends
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, HTTPException
 from sqlalchemy.orm import Session
-from database import get_db
 from model.user_model import User
-
 from datetime import timedelta, datetime
 from typing import Annotated
-from fastapi import APIRouter, Depends, FastAPI, HTTPException
 from starlette import status
 from passlib.context import CryptContext
-from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
+from fastapi.security import OAuth2PasswordBearer
 from jose import jwt, JWTError
 import uuid
 
 
-# must be hidden in prod env
+# best practice should be to place them in .env file ..  
 SECRET_KEY = "12fc35468045690$78900-323235#ec46754b4354a5196696969e69"
 ALGORITHM = 'HS256'
+# wrote here for convenience
+#=======================================================
 
 bycrypt_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 oauth2_bearer = OAuth2PasswordBearer(tokenUrl='auth/login')
